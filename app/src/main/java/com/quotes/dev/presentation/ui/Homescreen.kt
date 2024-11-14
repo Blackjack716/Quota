@@ -29,6 +29,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,22 +46,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.quotes.dev.R
+import com.quotes.dev.domain.model.Quote
 import com.quotes.dev.presentation.theme.CategoryMenuTheme
 import com.quotes.dev.presentation.theme.Typography
 
-@Preview(showBackground = true)
 @Composable
-fun QuoteHomeScreen(innerPadding: PaddingValues = PaddingValues(20.dp)) {
+fun QuoteHomeScreen(
+    innerPadding: PaddingValues = PaddingValues(20.dp),
+    quote: Quote?
+) {
 
     val contentWidthFraction = 0.8f
 
-    val quoteTextStyle by remember {
-        mutableStateOf(TextFieldState("testowy quote"))
-        // TODO: z mainviewmodel
+    val quoteTextState by remember {
+        mutableStateOf(TextFieldState(quote?.quote ?: ""))
     }
     val authorNameState by remember {
-        mutableStateOf(TextFieldState("testowy author name"))
-        // TODO: z mainviewmodel
+        mutableStateOf(TextFieldState(quote?.author ?: ""))
     }
 
     Column(
@@ -89,7 +91,7 @@ fun QuoteHomeScreen(innerPadding: PaddingValues = PaddingValues(20.dp)) {
                     .padding(4.dp)
                     .border(BorderStroke(2.dp, color = Color.LightGray), shape = RoundedCornerShape(8.dp))
                     .align(Alignment.Start),
-                state = quoteTextStyle,
+                state = quoteTextState,
                 textStyle = LocalTextStyle.current.copy(fontStyle = FontStyle.Italic),
                 lineLimits = TextFieldLineLimits.Default
                 // TODO: line limit

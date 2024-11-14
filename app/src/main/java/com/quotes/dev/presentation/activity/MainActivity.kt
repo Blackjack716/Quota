@@ -8,8 +8,14 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.quotes.dev.domain.model.Quote
 import com.quotes.dev.presentation.theme.QuoteOfTheDayTheme
 import com.quotes.dev.presentation.ui.QuoteHomeScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,9 +29,19 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            var quoteState by remember {
+                mutableStateOf(mainViewModel.quote.value)
+            }
+
+            LaunchedEffect(Unit) {
+                mainViewModel.quote.collect {
+                    quoteState = it
+                }
+            }
+
             QuoteOfTheDayTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    QuoteHomeScreen(innerPadding)
+                    QuoteHomeScreen(innerPadding, quoteState)
                 }
             }
         }
@@ -34,4 +50,8 @@ class MainActivity : ComponentActivity() {
 
 @Preview
 @Composable
-fun HomeScreenPreview() = QuoteHomeScreen()
+fun HomeScreenPreview() = QuoteHomeScreen(quote = Quote(
+    "preview quote",
+    "preview author",
+    "preview category"
+))
