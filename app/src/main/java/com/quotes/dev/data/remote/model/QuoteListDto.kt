@@ -6,13 +6,13 @@ import com.google.gson.annotations.SerializedName
 class QuoteDto {
     @SerializedName("quote")
     @Expose
-    val quote: String? = null
+    var quote: String? = null
 
     @SerializedName("author")
     @Expose
-    val author: String? = null
+    var author: String? = null
 
     @SerializedName("category")
     @Expose
-    val category: String? = null
+    var category: String? = null
 }

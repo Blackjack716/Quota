@@ -46,23 +46,40 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.quotes.dev.R
-import com.quotes.dev.domain.model.Quote
+import com.quotes.dev.domain.model.CategoryList
+import com.quotes.dev.domain.model.QuoteData
 import com.quotes.dev.presentation.theme.CategoryMenuTheme
 import com.quotes.dev.presentation.theme.Typography
 
 @Composable
 fun QuoteHomeScreen(
     innerPadding: PaddingValues = PaddingValues(20.dp),
-    quote: Quote?
+    quoteData: QuoteData,
+    onAction: (UserAction) -> Unit
 ) {
 
     val contentWidthFraction = 0.8f
 
-    val quoteTextState by remember {
-        mutableStateOf(TextFieldState(quote?.quote ?: ""))
+    var quoteTextState by remember {
+        if (quoteData is QuoteData.Quote) {
+            mutableStateOf(TextFieldState(quoteData.quote))
+        } else {
+            mutableStateOf(TextFieldState(""))
+        }
     }
-    val authorNameState by remember {
-        mutableStateOf(TextFieldState(quote?.author ?: ""))
+    var authorNameState by remember {
+        if (quoteData is QuoteData.Quote) {
+            mutableStateOf(TextFieldState(quoteData.author))
+        } else {
+            mutableStateOf(TextFieldState(""))
+        }
+    }
+
+    LaunchedEffect(quoteData) {
+        if (quoteData is QuoteData.Quote) {
+            quoteTextState = TextFieldState(quoteData.quote)
+            authorNameState = TextFieldState(quoteData.author)
+        }
     }
 
     Column(
@@ -86,26 +103,33 @@ fun QuoteHomeScreen(
                 .requiredHeightIn(min = 200.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
-            BasicTextField(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .border(BorderStroke(2.dp, color = Color.LightGray), shape = RoundedCornerShape(8.dp))
-                    .align(Alignment.Start),
-                state = quoteTextState,
-                textStyle = LocalTextStyle.current.copy(fontStyle = FontStyle.Italic),
-                lineLimits = TextFieldLineLimits.Default
-                // TODO: line limit
-            )
-            BasicTextField(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .border(BorderStroke(2.dp, color = Color.LightGray), shape = RoundedCornerShape(8.dp))
-                    .align(Alignment.End),
-                state = authorNameState,
-                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End, fontStyle = FontStyle.Italic),
-                lineLimits = TextFieldLineLimits.SingleLine,
-                // TODO: line limit
-            )
+            if (quoteTextState.text.isNotEmpty()) {
+                BasicTextField(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .border(BorderStroke(2.dp, color = Color.LightGray), shape = RoundedCornerShape(8.dp))
+                        .align(Alignment.Start)
+                        .padding(4.dp),
+                    state = quoteTextState,
+                    textStyle = LocalTextStyle.current.copy(fontStyle = FontStyle.Italic),
+                    lineLimits = TextFieldLineLimits.Default
+                    // TODO: line limit
+                )
+            }
+
+            if (authorNameState.text.isNotEmpty()) {
+                BasicTextField(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .border(BorderStroke(2.dp, color = Color.LightGray), shape = RoundedCornerShape(8.dp))
+                        .align(Alignment.End)
+                        .padding(4.dp),
+                    state = authorNameState,
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End, fontStyle = FontStyle.Italic),
+                    lineLimits = TextFieldLineLimits.SingleLine,
+                    // TODO: line limit
+                )
+            }
         }
         Box(
             modifier = Modifier
@@ -118,8 +142,8 @@ fun QuoteHomeScreen(
                     .align(Alignment.TopCenter)
                     .fillMaxHeight()
             ) {
-                GenerateQuoteButton()
-                CategoryDropdownMenu()
+                GenerateQuoteButton(onAction)
+                CategoryDropdownMenu(onAction)
             }
 
 
@@ -129,13 +153,15 @@ fun QuoteHomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryDropdownMenu() {
+fun CategoryDropdownMenu(
+    onCategoryChange: (UserAction) -> Unit
+) {
 
-    val categoryData = listOf("all", "philosophy", "ancient", "humor", "other", "cat1", "cat2", "cat3", "cat4")
+    val categoryData = CategoryList()
 
     var isDropDownMenuExpanded by remember { mutableStateOf(false) }
 
-    var currentCategory by remember { mutableStateOf(categoryData.first()) }
+    var currentCategory by remember { mutableStateOf(categoryData.first().name) }
 
     ExposedDropdownMenuBox(
         modifier = Modifier
@@ -175,10 +201,10 @@ fun CategoryDropdownMenu() {
                     DropdownMenuItem(
                         modifier = Modifier
                             .fillMaxSize(),
-                        text = { Text(it) },
+                        text = { Text(it.name) },
                         onClick = {
-                            //view model change category
-                            currentCategory = it
+                            onCategoryChange(UserAction.OnCategoryClicked(it))
+                            currentCategory = it.name
                             isDropDownMenuExpanded = false
                         },
                         contentPadding = PaddingValues(horizontal = 8.dp)
@@ -192,7 +218,9 @@ fun CategoryDropdownMenu() {
 }
 
 @Composable
-fun GenerateQuoteButton() {
+fun GenerateQuoteButton(
+    onButtonClicked: (UserAction) -> Unit
+) {
     Button(
         modifier = Modifier
             .padding(top = 8.dp, start = 8.dp, end = 8.dp)
@@ -205,9 +233,22 @@ fun GenerateQuoteButton() {
         ),
         shape = RoundedCornerShape(12.dp),
         onClick = {
-            // TODO: event on click
+            onButtonClicked(UserAction.OnButtonClicked)
         }
     ) {
         Text(stringResource(R.string.generate_button_text))
     }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun HomeScreenPreview() {
+    QuoteHomeScreen(
+        quoteData = QuoteData.Quote(
+            "testing quote",
+            "testing author",
+            "testing category"
+        ),
+        onAction = {}
+    )
 }
