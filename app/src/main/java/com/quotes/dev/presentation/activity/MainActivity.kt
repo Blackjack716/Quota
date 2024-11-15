@@ -32,7 +32,6 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(Unit) {
                 mainViewModel.quote.collect {
-                    println("dupa $it")
                     quoteState = it
                 }
             }

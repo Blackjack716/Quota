@@ -16,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getRandomQuoteUseCase: GetRandomQuoteUseCase
-) : ViewModel()  {
+) : ViewModel() {
 
     private val _quote = MutableStateFlow<QuoteData>(QuoteData.Error)
     val quote = _quote.asStateFlow()
@@ -30,6 +30,7 @@ class MainViewModel @Inject constructor(
                     getRandomQuote(_currentCategory.value)
                 }
             }
+
             is UserAction.OnCategoryClicked -> {
                 _currentCategory.value = event.category
             }
@@ -39,7 +40,6 @@ class MainViewModel @Inject constructor(
     private fun getRandomQuote(category: Category) {
         viewModelScope.launch {
             _quote.emit(getRandomQuoteUseCase.execute(category))
-            println("dupa vm ${_quote.value}" )
         }
     }
 }
