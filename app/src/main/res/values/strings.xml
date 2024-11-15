@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">QuoteOfTheDay</string>
+    <string name="generate_button_text">Generate</string>
+    <string name="menu_hint">Category</string>
 </resources>
