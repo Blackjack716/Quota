@@ -26,6 +26,7 @@ retrofitSerializationConverter = "2.11.0"
 retrofit = "2.11.0"
 okhttp3 = "4.12.0"
 room = "2.6.1"
+secret = "2.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -72,4 +73,5 @@ jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrai
 dagger-gradle = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinCompose" }
 kotlinx-serialization = {id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinxSerialization" }
+secret = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secret"}
 
