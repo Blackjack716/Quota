@@ -2,6 +2,7 @@ package com.quotes.dev.presentation.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -20,6 +22,8 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -27,6 +31,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +54,7 @@ import com.quotes.dev.R
 import com.quotes.dev.domain.model.CategoryList
 import com.quotes.dev.domain.model.QuoteData
 import com.quotes.dev.presentation.theme.CategoryMenuTheme
+import com.quotes.dev.presentation.theme.LocalPallet
 import com.quotes.dev.presentation.theme.Typography
 
 @Composable
@@ -84,6 +90,7 @@ fun QuoteHomeScreen(
 
     Column(
         modifier = Modifier
+            .background(color = LocalPallet.current.backgroundColor)
             .padding(innerPadding)
             .fillMaxSize()
     ) {
@@ -111,9 +118,12 @@ fun QuoteHomeScreen(
                         .align(Alignment.Start)
                         .padding(4.dp),
                     state = quoteTextState,
-                    textStyle = LocalTextStyle.current.copy(fontStyle = FontStyle.Italic),
-                    lineLimits = TextFieldLineLimits.Default
-                    // TODO: line limit
+                    textStyle = LocalTextStyle.current.copy(
+                        fontStyle = FontStyle.Italic,
+                        color = LocalPallet.current.primaryTextColor
+                    ),
+                    lineLimits = TextFieldLineLimits.Default,
+                    readOnly = true,
                 )
             }
 
@@ -125,9 +135,13 @@ fun QuoteHomeScreen(
                         .align(Alignment.End)
                         .padding(4.dp),
                     state = authorNameState,
-                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.End, fontStyle = FontStyle.Italic),
+                    textStyle = LocalTextStyle.current.copy(
+                        textAlign = TextAlign.End,
+                        fontStyle = FontStyle.Italic,
+                        color = LocalPallet.current.primaryTextColor
+                    ),
                     lineLimits = TextFieldLineLimits.SingleLine,
-                    // TODO: line limit
+                    readOnly = true,
                 )
             }
         }
@@ -142,7 +156,7 @@ fun QuoteHomeScreen(
                     .align(Alignment.TopCenter)
                     .fillMaxHeight()
             ) {
-                GenerateQuoteButton(onAction)
+                GenerateQuoteButton(onAction, quoteTextState)
                 CategoryDropdownMenu(onAction)
             }
 
@@ -173,7 +187,7 @@ fun CategoryDropdownMenu(
     ) {
         CategoryMenuTheme {
             OutlinedTextField(
-                label = { Text(stringResource(R.string.menu_hint)) },
+                label = { Text(stringResource(R.string.menu_hint), color = LocalPallet.current.secondaryTextColor) },
                 value = currentCategory,
                 onValueChange = {
 
@@ -181,6 +195,10 @@ fun CategoryDropdownMenu(
                 textStyle = Typography.bodyMedium,
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropDownMenuExpanded) },
+                colors = OutlinedTextFieldDefaults.colors().copy(
+                    unfocusedTextColor = LocalPallet.current.primaryTextColor,
+                    focusedTextColor = LocalPallet.current.primaryTextColor
+                ),
                 modifier = Modifier
                     .menuAnchor()
                     .clip(RoundedCornerShape(8.dp))
@@ -189,6 +207,7 @@ fun CategoryDropdownMenu(
             val scrollState = rememberScrollState()
             ExposedDropdownMenu(
                 modifier = Modifier
+                    .background(color = LocalPallet.current.buttonBackgroundColor)
                     .requiredHeightIn(max = 150.dp)
                     .exposedDropdownSize(),
                 expanded = isDropDownMenuExpanded,
@@ -200,8 +219,9 @@ fun CategoryDropdownMenu(
                 categoryData.forEach {
                     DropdownMenuItem(
                         modifier = Modifier
+                            .background(color = LocalPallet.current.buttonBackgroundColor)
                             .fillMaxSize(),
-                        text = { Text(it.name) },
+                        text = { Text(it.name, color = LocalPallet.current.buttonTextColor) },
                         onClick = {
                             onCategoryChange(UserAction.OnCategoryClicked(it))
                             currentCategory = it.name
@@ -219,24 +239,46 @@ fun CategoryDropdownMenu(
 
 @Composable
 fun GenerateQuoteButton(
-    onButtonClicked: (UserAction) -> Unit
+    onButtonClicked: (UserAction) -> Unit,
+    quoteTextState: TextFieldState
 ) {
+
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(quoteTextState) {
+        isLoading = false
+    }
+
     Button(
         modifier = Modifier
             .padding(top = 8.dp, start = 8.dp, end = 8.dp)
             .height(46.dp),
         colors = ButtonColors(
-            containerColor = Color.LightGray,
-            contentColor = Color.White,
+            containerColor = LocalPallet.current.buttonBackgroundColor,
+            contentColor = LocalPallet.current.buttonTextColor,
             disabledContainerColor = Color.DarkGray,
             disabledContentColor = Color.LightGray
         ),
         shape = RoundedCornerShape(12.dp),
         onClick = {
             onButtonClicked(UserAction.OnButtonClicked)
-        }
+            isLoading = true
+        },
+        enabled = !isLoading
     ) {
-        Text(stringResource(R.string.generate_button_text))
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(ButtonDefaults.IconSize),
+                color = LocalPallet.current.buttonTextColor,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Text(stringResource(R.string.generate_button_text))
+        }
+
     }
 }
 
